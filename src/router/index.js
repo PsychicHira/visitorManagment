@@ -53,7 +53,7 @@ const router = new Router({
     },
     {
       path: '/inquirySymptem',
-      name: 'inquirySymptem',
+      // name: 'inquirySymptem',
       component: Home,
       meta: { title: '查诊' },
       children:

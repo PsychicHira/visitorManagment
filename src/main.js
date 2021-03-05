@@ -20,6 +20,7 @@ Vue.use(Vuex)
 Vue.prototype.$fileDownload = fileDownload
 
 
+Vue.prototype.$baseUrl = 'http://localhost:3000/'
 
 //配置全局url
 // Vue.prototype.$baseUrl = function(){

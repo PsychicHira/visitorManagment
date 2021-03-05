@@ -39,12 +39,50 @@ export {
 
   addVisitor,       //新增访客
   queryVisitor,     //查询访客列表
-  
+
+  addInquiryDetail,       //新增诊断详情
+  queryInquiryDetailByVId,       //查询诊断详情（根据访客id）
+
 
   submitUpload,         //文件上传
 
 
 
+}
+
+//文件上传
+let submitUpload = async function (file, cb) {
+  // this.$refs.upload.submit();
+  const formData = new FormData()
+  // console.log(this.$refs.upload.uploadFiles[0])
+  // const file = file
+  console.log(file)
+
+  let config = {
+    //必须
+    headers: {
+      "Content-Type": "multipart/form-data"
+    },
+  }
+  if (!file) { // 若未选择文件
+    alert('请选择文件')
+    return
+  }
+  formData.append('file', file.raw)
+  await axios.post('/upload', formData, config).then(res => {
+    // console.log(res.data.path)//图片的路径
+    if (res == 0) {
+      Vue.prototype.$message({
+        message: res.data,
+        type: 'error',
+        duration: 3000
+      });
+      console.log(res.data)
+      return
+    } else {
+      cb(res.data.path)
+    }
+  })
 }
 
 
@@ -224,7 +262,7 @@ let deleteVisitorSource = function (data, cb) {
 // -----------------------------------------------新增访客-------------------------------------------------------------------
 
 //新增访客
-let addVisitor = function(data, cb) {
+let addVisitor = function (data, cb) {
   axios.post(`/visitor/add`, data).then(res => {
     if (res.data.code == 2) {
       Vue.prototype.$message({
@@ -258,6 +296,61 @@ let addVisitor = function(data, cb) {
 //查询访客列表
 let queryVisitor = function (cb) {
   axios.get(`/visitor/query`).then(res => {
+    if (res.data.code == 2) {
+      Vue.prototype.$message({
+        message: '请求失败' + res.data.message,
+        type: 'error',
+        duration: 3000
+      });
+    } else {
+      cb(res.data.data)
+    }
+  }).catch(function (error) {
+    Vue.prototype.$message({
+      message: '请求失败' + error,
+      type: 'error',
+      duration: 3000
+    });
+  })
+}
+
+
+// -----------------------------------------------诊断详情-------------------------------------------------------------------
+
+//新增诊断详情
+let addInquiryDetail = function (data, cb) {
+  axios.post(`/inquirySymptem/add`, data).then(res => {
+    if (res.data.code == 2) {
+      Vue.prototype.$message({
+        message: '请求失败' + res.data.message,
+        type: 'error',
+        duration: 3000
+      });
+    } else if (res.data.code == 0) {
+      Vue.prototype.$message({
+        message: res.data.message,
+        type: 'error',
+        duration: 3000
+      });
+    } else if (res.data.code == 1) {
+      cb(1)
+      Vue.prototype.$message({
+        message: res.data.message,
+        type: 'success',
+        duration: 3000
+      });
+    }
+  }).catch(function (error) {
+    Vue.prototype.$message({
+      message: '请求失败' + error,
+      type: 'error',
+      duration: 3000
+    });
+  })
+}
+
+let queryInquiryDetailByVId = function (data,cb) {
+  axios.get(`/inquirySymptem/query?id=${data}`).then(res => {
     if (res.data.code == 2) {
       Vue.prototype.$message({
         message: '请求失败' + res.data.message,
@@ -454,40 +547,7 @@ let queryPriority = function (cb) {
 }
 
 
-//文件上传
-let submitUpload = async function (file, cb) {
-  // this.$refs.upload.submit();
-  const formData = new FormData()
-  // console.log(this.$refs.upload.uploadFiles[0])
-  // const file = file
-  console.log(file)
 
-  let config = {
-    //必须
-    headers: {
-      "Content-Type": "multipart/form-data"
-    },
-  }
-  if (!file) { // 若未选择文件
-    alert('请选择文件')
-    return
-  }
-  formData.append('file', file.raw)
-  await axios.post('/upload', formData, config).then(res => {
-    // console.log(res.data.path)//图片的路径
-    if (res == 0) {
-      Vue.prototype.$message({
-        message: res.data,
-        type: 'error',
-        duration: 3000
-      });
-      console.log(res.data)
-      return
-    } else {
-      cb(res.data.path)
-    }
-  })
-}
 
 //查询问题类型
 let queryProblemType = function (cb) {

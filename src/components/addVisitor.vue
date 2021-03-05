@@ -195,7 +195,7 @@ export default {
     //选择访问时间
     getVisitDate(val) {
       // console.log(val)
-      this.form.visitDate = new Date(val).getFullYear() + '-' + (new Date(val).getMonth() + 1) + '-' + new Date(val).getDate()
+      let date = new Date(val).getFullYear() + '-' + (new Date(val).getMonth() + 1) + '-' + new Date(val).getDate()
        let h = new Date(val).getHours().toString()
       let m = new Date(val).getMinutes().toString()
       let s = new Date(val).getSeconds().toString()
@@ -208,7 +208,7 @@ export default {
       if (s.length < 2) {
         s = '0' + s.toString()
       }
-      this.form.bornDate = date + ' ' + h + ':' + m + ':' + s
+      this.form.visitDate = date + ' ' + h + ':' + m + ':' + s
       // console.log(this.form.bornDate)
     },
   },
