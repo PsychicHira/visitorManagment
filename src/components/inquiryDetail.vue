@@ -1,5 +1,5 @@
 <template>
-  <div class="inquiryDetail">
+  <div class="inquiryDetail" v-loading.fullscreen.lock="Loading">
     <el-card class="box-card">
       <h3>诊历详情</h3>
 
@@ -19,67 +19,72 @@
       <el-button style="margin:0 0 20px 0" type="success" @click="dialogVisible = true">添加诊断</el-button>
 
       <el-card v-if="VDetail.length > 0" class="card" v-for="(item,index) in VDetail" :key="index">
-          <el-row>
-            <el-col :span="6">
-              <p class="weightFont">咨询主题：</p>
-              <p>{{item.title}}</p>
-            </el-col>
+        <el-row>
+          <el-col :span="6">
+            <p class="weightFont">咨询主题：</p>
+            <p>{{item.title}}</p>
+          </el-col>
 
-            <el-col :span="6">
-              <p class="weightFont">咨询类型：</p>
-              <p>{{item.consultType}}</p>
-            </el-col>
+          <el-col :span="6">
+            <p class="weightFont">咨询类型：</p>
+            <p>{{item.consultType}}</p>
+          </el-col>
 
-            <el-col :span="6">
-              <p class="weightFont">咨询时间：</p>
-              <p>{{item.inquiryDate}}</p>
-            </el-col>
-          </el-row>
+          <el-col :span="6">
+            <p class="weightFont">咨询时间：</p>
+            <p>{{item.inquiryDate}}</p>
+          </el-col>
 
-          <el-row>
-            <el-col>
-              <!-- <img class="photo" :src="baseUrl+item.photoPath" alt=""> -->
-              <div class="demo-image__preview" v-if="item.photoPath">
-                <el-image style="width: 100px" :src="baseUrl+item.photoPath" :preview-src-list="srcList(index)">
-                </el-image>
-              </div>
-            </el-col>
-          </el-row>
+          <el-col :span="6">
+            <p class="weightFont">咨询费用：</p>
+            <p>{{item.price}}</p>
+          </el-col>
+        </el-row>
 
-          <el-row>
-            <el-col>
-              <p class="weightFont">症状描述：</p>
-              <p>{{item.desc}}</p>
-            </el-col>
-          </el-row>
+        <el-row>
+          <el-col>
+            <!-- <img class="photo" :src="baseUrl+item.photoPath" alt=""> -->
+            <div class="demo-image__preview" v-if="item.photoPath">
+              <el-image style="width: 100px" :src="baseUrl+item.photoPath" :preview-src-list="srcList(index)">
+              </el-image>
+            </div>
+          </el-col>
+        </el-row>
 
-          <el-row>
-            <el-col>
-              <p class="weightFont">诊断结果：</p>
-              <p>{{item.result}}</p>
-            </el-col>
-          </el-row>
+        <el-row>
+          <el-col>
+            <p class="weightFont">症状描述：</p>
+            <p>{{item.desc}}</p>
+          </el-col>
+        </el-row>
 
-          <el-row>
-            <el-col>
-              <p class="weightFont">处理方案：</p>
-              <p>{{item.desc}}</p>
-            </el-col>
-          </el-row>
+        <el-row>
+          <el-col>
+            <p class="weightFont">诊断结果：</p>
+            <p>{{item.result}}</p>
+          </el-col>
+        </el-row>
 
-          <el-row>
-            <el-col>
-              <p class="weightFont">结果反馈：</p>
-              <p>{{item.feedbak}}</p>
-            </el-col>
-          </el-row>
+        <el-row>
+          <el-col>
+            <p class="weightFont">处理方案：</p>
+            <p>{{item.solution}}</p>
+          </el-col>
+        </el-row>
 
-          <el-row>
-            <el-col>
-              <p class="weightFont">备&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;注：</p>
-              <p>{{item.remark}}</p>
-            </el-col>
-          </el-row>
+        <el-row>
+          <el-col>
+            <p class="weightFont">结果反馈：</p>
+            <p>{{item.feedbak}}</p>
+          </el-col>
+        </el-row>
+
+        <el-row>
+          <el-col>
+            <p class="weightFont">备&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;注：</p>
+            <p>{{item.remark}}</p>
+          </el-col>
+        </el-row>
 
       </el-card>
 
@@ -181,6 +186,7 @@
 
       <div slot="footer" class="dialog-footer">
         <el-button type="primary" @click="commit('form')">确 定</el-button>
+        <el-button @click="clear">重置</el-button>
         <el-button @click="dialogVisible = false">取 消</el-button>
       </div>
     </el-dialog>
@@ -219,6 +225,7 @@ export default {
       visitDate: '',
       baseUrl: '',
       photoArr: [],
+      Loading: false,
       //表单验证项
       rules: {
         title: [
@@ -250,6 +257,7 @@ export default {
   },
   methods: {
     commit(form) {
+
       //设置一个变量，用来终止提交，不然下面一个验证函数return无效，只是终止它自己，不终止这个提交功能
       //1表示继续，0表示终止
       let go = 1
@@ -264,29 +272,101 @@ export default {
         }
       });
       if (go == 0) return
-      console.log(1111111)
 
-      //如果上传了文件
-      if (this.fileList[0]) {
-        console.log(this.form)
-        //把上传文件函数改为同步，因为里面有上传文件的axios请求
-        submitUpload(this.fileList[0], (res) => {
-          this.form.photoPath = res
-        }).then(res => {
+
+      this.$confirm(`确认提交?`, '提示', {
+        confirmButtonText: '确定',
+        cancelButtonText: '取消',
+        type: 'warning'
+      }).then(() => {
+        this.Loading = true;
+
+        //如果上传了文件
+        if (this.fileList[0]) {
+          console.log(this.form)
+          //把上传文件函数改为同步，因为里面有上传文件的axios请求
+          submitUpload(this.fileList[0], (res) => {
+            this.form.photoPath = res
+          }).then(res => {
+            C_addInquiryDetail(this.form, res => {
+              this.Loading = false
+              if (res == 1) {
+                //获取访客诊断详情
+                C_queryInquiryDetailByVId(this.form.vid, res => {
+                  console.log(res)
+                  console.log(typeof res)
+                  console.log(res[0])
+
+                  this.VDetail = res
+                  res.forEach(ele => {
+                    this.photoArr.push(ele.photoPath)
+                    console.log(ele)
+                  })
+                  this.clear()
+                })
+              }
+            })
+          })
+        } else {
+          console.log(this.form)
           C_addInquiryDetail(this.form, res => {
+            this.Loading = false
             if (res == 1) {
-              this.clear()
+              //获取访客诊断详情
+              C_queryInquiryDetailByVId(this.form.vid, res => {
+                console.log(res)
+                console.log(typeof res)
+                console.log(res[0])
+
+                this.VDetail = res
+                res.forEach(ele => {
+                  this.photoArr.push(ele.photoPath)
+                  console.log(ele)
+                })
+                this.clear()
+              })
             }
           })
-        })
-      } else {
-        console.log(this.form)
-        C_addInquiryDetail(this.form, res => {
+        }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+        C_deleteVisitor(obj, res => {
+          this.Loading = false
           if (res == 1) {
-            this.clear()
+            //重新获取访客列表
+            C_queryVisitor(r => {
+              this.tableData = r
+            })
           }
         })
-      }
+
+
+
+
+      }).catch(() => {
+        this.$message({
+          type: 'info',
+          message: '已取消'
+        });
+      });
+
+
+
+
+
+
     },
 
     //选择咨询时间
@@ -312,6 +392,10 @@ export default {
     //清空表单
     clear() {
       this.form = {}
+      this.consultType = []
+      this.visitDate = ''
+      this.fileList = []
+      this.dialogVisible = false
     },
 
     //图片放大
@@ -396,6 +480,6 @@ p {
   width: 500px;
 }
 .card {
-  margin: 20px 0;;
+  margin: 20px 0;
 }
 </style>

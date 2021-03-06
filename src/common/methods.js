@@ -39,6 +39,8 @@ export {
 
   addVisitor,       //新增访客
   queryVisitor,     //查询访客列表
+  deleteVisitor,       //删除访客
+
 
   addInquiryDetail,       //新增诊断详情
   queryInquiryDetailByVId,       //查询诊断详情（根据访客id）
@@ -125,6 +127,7 @@ let addConsultType = function (data, cb) {
         duration: 3000
       });
     } else if (res.data.code == 1) {
+      //这里给1回去，是为了前端继续做逻辑判断
       cb(1)
       Vue.prototype.$message({
         message: res.data.message,
@@ -259,7 +262,7 @@ let deleteVisitorSource = function (data, cb) {
   })
 }
 
-// -----------------------------------------------新增访客-------------------------------------------------------------------
+// -----------------------------------------------访客-------------------------------------------------------------------
 
 //新增访客
 let addVisitor = function (data, cb) {
@@ -314,6 +317,38 @@ let queryVisitor = function (cb) {
   })
 }
 
+//删除访客
+let deleteVisitor = function (data,cb) {
+  axios.post(`/visitor/delete`, data).then(res => {
+    if (res.data.code == 2) {
+      Vue.prototype.$message({
+        message: '请求失败' + res.data.message,
+        type: 'error',
+        duration: 3000
+      });
+    } else if (res.data.code == 0) {
+      Vue.prototype.$message({
+        message: res.data.message,
+        type: 'error',
+        duration: 3000
+      });
+    } else if (res.data.code == 1) {
+      cb(1)
+      Vue.prototype.$message({
+        message: res.data.message,
+        type: 'success',
+        duration: 3000
+      });
+    }
+  }).catch(function (error) {
+    Vue.prototype.$message({
+      message: '请求失败' + error,
+      type: 'error',
+      duration: 3000
+    });
+  })
+}
+
 
 // -----------------------------------------------诊断详情-------------------------------------------------------------------
 
@@ -349,7 +384,7 @@ let addInquiryDetail = function (data, cb) {
   })
 }
 
-let queryInquiryDetailByVId = function (data,cb) {
+let queryInquiryDetailByVId = function (data, cb) {
   axios.get(`/inquirySymptem/query?id=${data}`).then(res => {
     if (res.data.code == 2) {
       Vue.prototype.$message({

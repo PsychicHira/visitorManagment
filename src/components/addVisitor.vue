@@ -1,5 +1,5 @@
 <template>
-  <div class="Todo">
+  <div class="addVisitor" v-loading.fullscreen.lock="Loading">
     <el-card class="box-card">
       <h1 style="margin:10px 0">新增访客</h1>
       <el-divider class="el-divider"></el-divider>
@@ -16,14 +16,6 @@
             <el-form-item label="性别">
               <el-select v-model="form.sex" placeholder="请选择性别" class="w100" @change="selectSex">
                 <el-option v-for="item in sex" :key="item.value" :label="item.label" :value="item.value"></el-option>
-              </el-select>
-            </el-form-item>
-          </el-col>
-
-          <el-col :span="5">
-            <el-form-item label="咨询类型">
-              <el-select v-model="form.consultType" placeholder="请选择类型" class="w100" @change="selectConsultType">
-                <el-option v-for="item in consultType" :key="item.value" :label="item.label" :value="item.label"></el-option>
               </el-select>
             </el-form-item>
           </el-col>
@@ -64,27 +56,7 @@
             </el-form-item>
           </el-col>
 
-          <!-- <el-col :span="5">
-            <el-form-item label="挂号费">
-              <el-input v-model="form.price"></el-input>
-            </el-form-item>
-          </el-col> -->
-
         </el-row>
-
-        <!-- <el-row>
-          <el-col :span="5">
-            <el-form-item label="访客照片">
-              <el-upload class="upload-demo" ref="upload" action="https://jsonplaceholder.typicode.com/posts/" :limit="1" :on-preview="handlePreview" :on-remove="handleRemove" :file-list="fileList" :auto-upload="false" :on-change="changeFile">
-                <el-button slot="trigger" size="" type="primary">选取文件</el-button>
-              </el-upload>
-            </el-form-item>
-          </el-col>
-        </el-row> -->
-
-        <!-- <el-form-item label="症状描述" prop="content">
-          <el-input type="textarea" v-model="form.symptom" :rows="4"></el-input>
-        </el-form-item> -->
 
         <el-form-item>
           <el-button type="primary" @click="commitVisitor()">提交</el-button>
@@ -101,9 +73,7 @@
 <script>
 import {
   addVisitor as C_addVisitor,
-  queryConsultType as C_queryConsultType,
   queryVisitorSource as C_queryVisitorSource,
-
 } from '../common/methods.js'
 export default {
   name: 'Todo',
@@ -115,7 +85,6 @@ export default {
         bornDate: '',
         visitDate: '',
         visitorSource: '',
-        consultType: '',
         province: '',
         city: ''
       },
@@ -127,29 +96,49 @@ export default {
         value: 0,
         label: '女'
       }],
-      //咨询类型options
-      consultType: [],
+
       //访客来源options
       visitorSource: [],
       bornDate: '',
-      visitDate: ''
+      visitDate: '',
+      Loading: false
     };
   },
   methods: {
 
     //提交
     commitVisitor() {
-      console.log(this.form)
-      C_addVisitor(this.form, res => {
-        console.log(res)
-        if (res == 1) {
 
-        }
-      })
+      let obj = {
+        consultType: this.form.consultType
+      }
+      this.$confirm('确认提交?', '提示', {
+        confirmButtonText: '确定',
+        cancelButtonText: '取消',
+        type: 'warning'
+      }).then(() => {
+        this.Loading = true;
+        C_addVisitor(this.form, res => {
+          this.Loading = false
+          console.log(res)
+          if (res == 1) {
+            this.clear()
+            this.bornDate = ''
+            this.visitDate = ''
+          }
+        })
+      }).catch(() => {
+        this.$message({
+          type: 'info',
+          message: '已取消'
+        });
+      });
     },
 
     clear() {
       this.form = {}
+      this.bornDate = ''
+      this.visitDate = ''
     },
     //选择性别
     selectSex(val) {
@@ -196,7 +185,7 @@ export default {
     getVisitDate(val) {
       // console.log(val)
       let date = new Date(val).getFullYear() + '-' + (new Date(val).getMonth() + 1) + '-' + new Date(val).getDate()
-       let h = new Date(val).getHours().toString()
+      let h = new Date(val).getHours().toString()
       let m = new Date(val).getMinutes().toString()
       let s = new Date(val).getSeconds().toString()
       if (h.length < 2) {
@@ -213,15 +202,6 @@ export default {
     },
   },
   mounted: function () {
-    //获取咨询类型
-    C_queryConsultType(res => {
-      res.forEach((element, index) => {
-        this.consultType.push({
-          value: index + 1,
-          label: element.consultType
-        })
-      })
-    })
 
     //获取访客来源
     C_queryVisitorSource(res => {

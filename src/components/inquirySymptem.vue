@@ -1,5 +1,5 @@
 <template>
-  <div class="inquirySymptem">
+  <div class="inquirySymptem" v-loading.fullscreen.lock="Loading">
     <el-card class="box-card">
       <h3>查诊</h3>
 
@@ -40,7 +40,7 @@
           <template slot-scope="scope">
             <el-button type="primary" size="mini" @click="toInquiryDetail(scope.$index, scope.row)">查诊</el-button>
             <el-button type="success" size="mini" @click="edit(scope.$index, scope.row)">编辑</el-button>
-            <el-button type="danger" size="mini" @click="edit(scope.$index, scope.row)">删除</el-button>
+            <el-button type="danger" size="mini" @click="toDeleteVisitor(scope.$index, scope.row)">删除</el-button>
           </template>
         </el-table-column>
 
@@ -111,12 +111,6 @@
             </el-form-item>
           </el-col>
 
-          <!-- <el-col :span="5">
-            <el-form-item label="挂号费">
-              <el-input v-model="form.price"></el-input>
-            </el-form-item>
-          </el-col> -->
-
         </el-row>
       </el-form>
 
@@ -134,6 +128,7 @@ import {
   queryVisitor as C_queryVisitor,
   queryConsultType as C_queryConsultType,
   queryVisitorSource as C_queryVisitorSource,
+  deleteVisitor as C_deleteVisitor,
 } from '../common/methods.js'
 export default {
   name: 'inquirySymptem',
@@ -157,6 +152,7 @@ export default {
       }],
       consultType: [],
       visitorSource: [],
+      Loading: false
     };
   },
   methods: {
@@ -199,12 +195,41 @@ export default {
 
     },
 
-    toInquiryDetail(index,row){
+    //去诊断详情页
+    toInquiryDetail(index, row) {
       console.log(row)
       this.$router.push({
-        name:'inquiryDetail',
-        params:row
+        name: 'inquiryDetail',
+        params: row
       })
+    },
+
+    //删除访客
+    toDeleteVisitor(index, row) {
+      let obj = {
+        id: row.id
+      }
+      this.$confirm(`确认删除?`, '提示', {
+        confirmButtonText: '确定',
+        cancelButtonText: '取消',
+        type: 'warning'
+      }).then(() => {
+        this.Loading = true;
+        C_deleteVisitor(obj, res => {
+          this.Loading = false
+          if (res == 1) {
+            //重新获取访客列表
+            C_queryVisitor(r => {
+              this.tableData = r
+            })
+          }
+        })
+      }).catch(() => {
+        this.$message({
+          type: 'info',
+          message: '已取消'
+        });
+      });
     },
     //
     selectConsultType() {
