@@ -410,10 +410,11 @@ export default {
     //清空表单
     clear() {
       this.form = {}
-      this.consultType = []
+      // this.consultType = []
       this.visitDate = ''
       this.fileList = []
       this.dialogVisible = false
+      this.form.vid = this.$route.params.id
     },
 
     //图片放大
