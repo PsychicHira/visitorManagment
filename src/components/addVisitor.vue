@@ -169,7 +169,7 @@ export default {
       let m = new Date(val).getMinutes().toString()
       let s = new Date(val).getSeconds().toString()
       if (h.length < 2) {
-        h = h + '0'
+        h = '0' + h
       }
       if (m.length < 2) {
         m = '0' + m.toString()
@@ -189,7 +189,7 @@ export default {
       let m = new Date(val).getMinutes().toString()
       let s = new Date(val).getSeconds().toString()
       if (h.length < 2) {
-        h = h + '0'
+        h = '0' + h
       }
       if (m.length < 2) {
         m = '0' + m.toString()

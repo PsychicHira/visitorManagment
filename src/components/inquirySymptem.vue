@@ -67,13 +67,13 @@
             </el-form-item>
           </el-col>
 
-          <el-col :span="6">
+          <!-- <el-col :span="6">
             <el-form-item label="咨询类型">
               <el-select v-model="form.consultType" placeholder="请选择类型" class="w100" @change="selectConsultType">
                 <el-option v-for="item in consultType" :key="item.value" :label="item.label" :value="item.label"></el-option>
               </el-select>
             </el-form-item>
-          </el-col>
+          </el-col> -->
 
           <el-col :span="6">
             <el-form-item label="访客来源">
@@ -89,7 +89,7 @@
 
           <el-col :span="6">
             <el-form-item label="出生时间">
-              <el-date-picker v-model="form.bornDate" type="datetime" placeholder="选择出生时间" style="width: 100%;" @change="getBornDate"></el-date-picker>
+              <el-date-picker v-model="bornDate" type="datetime" placeholder="选择出生时间" style="width: 100%;" @change="getBornDate"></el-date-picker>
             </el-form-item>
           </el-col>
 
@@ -107,7 +107,7 @@
 
           <el-col :span="6">
             <el-form-item label="来访时间">
-              <el-date-picker v-model="form.visitDate" type="datetime" placeholder="选择日期时间" style="width: 100%;" @change="getVisitDate"></el-date-picker>
+              <el-date-picker v-model="visitDate" type="datetime" placeholder="选择日期时间" style="width: 100%;" @change="getVisitDate"></el-date-picker>
             </el-form-item>
           </el-col>
 
@@ -115,7 +115,7 @@
       </el-form>
 
       <div slot="footer" class="dialog-footer">
-        <el-button type="primary" @click="centerDialogVisible = false">确 定</el-button>
+        <el-button type="primary" @click="updataVisitor">确 定</el-button>
         <el-button @click="dialogVisible = false">取 消</el-button>
       </div>
     </el-dialog>
@@ -129,6 +129,9 @@ import {
   queryConsultType as C_queryConsultType,
   queryVisitorSource as C_queryVisitorSource,
   deleteVisitor as C_deleteVisitor,
+  updataVisitor as C_updataVisitor,
+
+
 } from '../common/methods.js'
 export default {
   name: 'inquirySymptem',
@@ -139,8 +142,10 @@ export default {
       form: {
         name: '',
         bornDate: '',
-        consultType: '',
-        visitorSource: ''
+        visitorSource: '',
+        sex: '',
+        province:'',
+        city:''
       },
       //页面性别option选项
       sex: [{
@@ -152,7 +157,9 @@ export default {
       }],
       consultType: [],
       visitorSource: [],
-      Loading: false
+      Loading: false,
+      bornDate: '',
+      visitDate: '',
     };
   },
   methods: {
@@ -180,19 +187,60 @@ export default {
       this.dialogVisible = true
       console.log(index)
       console.log(row)
+      this.form.visitDate = row.visitDate
+      this.visitDate = row.visitDate
+      this.form.bornDate = row.bornDate
+      this.bornDate = row.bornDate
 
       this.form.name = row.name
       this.form.sex = row.sex
-      this.form.consultType = row.consultType
       this.form.visitorSource = row.visitorSource
-      this.form.bornDate = this.getNowTime(row.bornDate)
+      // this.form.bornDate = this.getNowTime(row.bornDate)
       this.form.province = row.province
       this.form.city = row.city
-      this.form.visitDate = this.getNowTime(row.visitDate)
-    },
-    //性别iptions
-    selectSex() {
 
+      this.form.id = row.id
+      // this.form.visitDate = this.getNowTime(row.visitDate)
+
+    },
+
+    //更新访客信息
+    updataVisitor() {
+      console.log(this.form)
+
+      this.$confirm(`确认提交?`, '提示', {
+        confirmButtonText: '确定',
+        cancelButtonText: '取消',
+        type: 'warning'
+      }).then(() => {
+        this.Loading = true;
+        C_updataVisitor(this.form, res => {
+          this.Loading = false
+          if (res == 1) {
+            //重新获取访客列表
+            C_queryVisitor(r => {
+              this.tableData = r
+              this.dialogVisible = false
+            })
+          }
+        })
+      }).catch(() => {
+        this.$message({
+          type: 'info',
+          message: '已取消'
+        });
+      });
+    },
+
+    //选择性别
+    selectSex(val) {
+      console.log(val)
+      //val打印出来sex其中元素的编号，根据编号做个判断性别，再把性别给到form提交表单中
+      if (val == 0) {
+        this.form.sex = '女'
+      } else {
+        this.form.sex = '男'
+      }
     },
 
     //去诊断详情页
@@ -231,22 +279,50 @@ export default {
         });
       });
     },
-    //
-    selectConsultType() {
 
+    //选择访客来源
+    selectVisitorSource(val) {
+      this.form.visitorSource = val
     },
-    //
-    selectVisitorSource() {
-
+    //选择出生时间
+    getBornDate(val) {
+      // console.log(val)
+      let date = new Date(val).getFullYear() + '-' + (new Date(val).getMonth() + 1) + '-' + new Date(val).getDate()
+      // new Date(val).getHours() + ':' + new Date(val).getMinutes() + ':' + new Date(val).getSeconds();
+      let h = new Date(val).getHours().toString()
+      let m = new Date(val).getMinutes().toString()
+      let s = new Date(val).getSeconds().toString()
+      if (h.length < 2) {
+        h = '0' + h
+      }
+      if (m.length < 2) {
+        m = '0' + m.toString()
+      }
+      if (s.length < 2) {
+        s = '0' + s.toString()
+      }
+      this.form.bornDate = date + ' ' + h + ':' + m + ':' + s
+      // console.log(this.form.bornDate)
     },
-    //
-    getBornDate() {
 
-    },
-
-    //
-    getVisitDate() {
-
+    //选择访问时间
+    getVisitDate(val) {
+      // console.log(val)
+      let date = new Date(val).getFullYear() + '-' + (new Date(val).getMonth() + 1) + '-' + new Date(val).getDate()
+      let h = new Date(val).getHours().toString()
+      let m = new Date(val).getMinutes().toString()
+      let s = new Date(val).getSeconds().toString()
+      if (h.length < 2) {
+        h = '0' + h
+      }
+      if (m.length < 2) {
+        m = '0' + m.toString()
+      }
+      if (s.length < 2) {
+        s = '0' + s.toString()
+      }
+      this.form.visitDate = date + ' ' + h + ':' + m + ':' + s
+      // console.log(this.form.bornDate)
     },
 
 

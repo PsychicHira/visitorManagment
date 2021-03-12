@@ -19,6 +19,9 @@
       <el-button style="margin:0 0 20px 0" type="success" @click="dialogVisible = true">添加诊断</el-button>
 
       <el-card v-if="VDetail.length > 0" class="card" v-for="(item,index) in VDetail" :key="index">
+
+        <el-tag class="del" closable @close="deleteInquiryDetail(item)" type=""></el-tag>
+
         <el-row>
           <el-col :span="6">
             <p class="weightFont">咨询主题：</p>
@@ -35,7 +38,7 @@
             <p>{{item.inquiryDate}}</p>
           </el-col>
 
-          <el-col :span="6">
+          <el-col :span="5">
             <p class="weightFont">咨询费用：</p>
             <p>{{item.price}}</p>
           </el-col>
@@ -201,6 +204,7 @@ import {
   submitUpload,
   addInquiryDetail as C_addInquiryDetail,
   queryInquiryDetailByVId as C_queryInquiryDetailByVId,
+  deleteInquiryDetail as C_deleteInquiryDetail,
 
 
 } from '../common/methods.js'
@@ -256,6 +260,53 @@ export default {
     };
   },
   methods: {
+
+    //删除诊断详情
+    deleteInquiryDetail(item) {
+      console.log(item)
+      let obj = {
+        id: item.id
+      }
+
+
+      this.$confirm(`确认删除?`, '提示', {
+        confirmButtonText: '确定',
+        cancelButtonText: '取消',
+        type: 'warning'
+      }).then(() => {
+        this.Loading = true;
+        C_deleteInquiryDetail(obj, res => {
+          this.Loading = false
+          if (res == 1) {
+            //获取访客诊断详情
+            C_queryInquiryDetailByVId(this.form.vid, res => {
+              console.log(res)
+              console.log(typeof res)
+              console.log(res[0])
+
+              this.VDetail = res
+              res.forEach(ele => {
+                this.photoArr.push(ele.photoPath)
+                console.log(ele)
+              })
+              this.clear()
+            })
+          }
+        })
+      }).catch(() => {
+        this.$message({
+          type: 'info',
+          message: '已取消'
+        });
+      });
+
+
+
+
+
+    },
+
+    //添加诊断详情
     commit(form) {
 
       //设置一个变量，用来终止提交，不然下面一个验证函数return无效，只是终止它自己，不终止这个提交功能
@@ -328,45 +379,12 @@ export default {
             }
           })
         }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-        C_deleteVisitor(obj, res => {
-          this.Loading = false
-          if (res == 1) {
-            //重新获取访客列表
-            C_queryVisitor(r => {
-              this.tableData = r
-            })
-          }
-        })
-
-
-
-
       }).catch(() => {
         this.$message({
           type: 'info',
           message: '已取消'
         });
       });
-
-
-
-
-
-
     },
 
     //选择咨询时间
@@ -481,5 +499,37 @@ p {
 }
 .card {
   margin: 20px 0;
+}
+
+//
+.inquiryDetail {
+  & >>> .el-tag {
+    background-color: transparent !important;
+    border-style: none !important;
+  }
+  & >>> .el-icon-close {
+    top: none !important;
+    right: none !important;
+    color: black !important;
+    width: 26px;
+    height: 26px;
+    line-height: 26px;
+    font-size: 26px;
+    margin-top: 20px;
+  }
+  & >>> .el-tag__close {
+    color: black !important;
+  }
+  & >>> .el-card__body {
+    // position: absolute;
+  }
+}
+
+.del {
+  float: right;
+  z-index: 99;
+  position: relative;
+  right: 0;
+  // right: 100px;
 }
 </style>

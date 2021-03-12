@@ -40,10 +40,12 @@ export {
   addVisitor,       //新增访客
   queryVisitor,     //查询访客列表
   deleteVisitor,       //删除访客
+  updataVisitor,    //更新访客
 
 
-  addInquiryDetail,       //新增诊断详情
+  addInquiryDetail,             //新增诊断详情
   queryInquiryDetailByVId,       //查询诊断详情（根据访客id）
+  deleteInquiryDetail,       //删除诊断详情
 
 
   submitUpload,         //文件上传
@@ -318,8 +320,40 @@ let queryVisitor = function (cb) {
 }
 
 //删除访客
-let deleteVisitor = function (data,cb) {
+let deleteVisitor = function (data, cb) {
   axios.post(`/visitor/delete`, data).then(res => {
+    if (res.data.code == 2) {
+      Vue.prototype.$message({
+        message: '请求失败' + res.data.message,
+        type: 'error',
+        duration: 3000
+      });
+    } else if (res.data.code == 0) {
+      Vue.prototype.$message({
+        message: res.data.message,
+        type: 'error',
+        duration: 3000
+      });
+    } else if (res.data.code == 1) {
+      cb(1)
+      Vue.prototype.$message({
+        message: res.data.message,
+        type: 'success',
+        duration: 3000
+      });
+    }
+  }).catch(function (error) {
+    Vue.prototype.$message({
+      message: '请求失败' + error,
+      type: 'error',
+      duration: 3000
+    });
+  })
+}
+
+//更新访客
+let updataVisitor = function(data,cb){
+  axios.post(`/visitor/updata`, data).then(res => {
     if (res.data.code == 2) {
       Vue.prototype.$message({
         message: '请求失败' + res.data.message,
@@ -384,6 +418,7 @@ let addInquiryDetail = function (data, cb) {
   })
 }
 
+//查询诊断详情（根据访客的id）
 let queryInquiryDetailByVId = function (data, cb) {
   axios.get(`/inquirySymptem/query?id=${data}`).then(res => {
     if (res.data.code == 2) {
@@ -403,6 +438,51 @@ let queryInquiryDetailByVId = function (data, cb) {
     });
   })
 }
+
+//删除诊断详情
+let deleteInquiryDetail = function (data, cb) {
+  axios.post(`/inquirySymptem/delete`, data).then(res => {
+    if (res.data.code == 2) {
+      Vue.prototype.$message({
+        message: '请求失败' + res.data.message,
+        type: 'error',
+        duration: 3000
+      });
+    } else if (res.data.code == 0) {
+      Vue.prototype.$message({
+        message: res.data.message,
+        type: 'error',
+        duration: 3000
+      });
+    } else if (res.data.code == 1) {
+      cb(1)
+      Vue.prototype.$message({
+        message: res.data.message,
+        type: 'success',
+        duration: 3000
+      });
+    }
+  }).catch(function (error) {
+    Vue.prototype.$message({
+      message: '请求失败' + error,
+      type: 'error',
+      duration: 3000
+    });
+  })
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
